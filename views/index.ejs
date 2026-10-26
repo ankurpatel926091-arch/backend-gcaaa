@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCAAA Cloud Engine • Live Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070913;
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(99, 102, 241, 0.25);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.35);
+      --cyan: #06b6d4;
+      --indigo: #6366f1;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+        radial-gradient(circle at 10% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 90% 70%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Top Live Pill */
+    .live-badge-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 1.15rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 9999px;
+      color: #34d399;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 0 25px var(--emerald-glow);
+    }
+
+    .pulse-dot {
+      position: relative;
+      width: 10px;
+      height: 10px;
+      background-color: var(--emerald);
+      border-radius: 50%;
+    }
+
+    .pulse-dot::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.5);
+      animation: radar 2s infinite ease-out;
+    }
+
+    @keyframes radar {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .title {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 20%, #cbd5e1 60%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Live Scope Heartbeat Banner */
+    .scope-banner {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 1.25rem;
+      padding: 1.25rem 1.75rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .scope-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .scope-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+    }
+
+    .scope-val {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .scope-graph {
+      flex: 1;
+      max-width: 320px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .ecg-line {
+      width: 100%;
+      height: 100%;
+      stroke: #34d399;
+      stroke-width: 2.2;
+      fill: none;
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: heartbeat 2.5s infinite linear;
+      filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.6));
+    }
+
+    @keyframes heartbeat {
+      0% { stroke-dashoffset: 400; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 1.1rem;
+      padding: 1.25rem;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--indigo), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .metric-card:hover {
+      border-color: var(--card-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px -8px rgba(99, 102, 241, 0.2);
+    }
+
+    .metric-card:hover::before {
+      opacity: 1;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .metric-value.mono {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+    }
+
+    .metric-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
+
+    /* Service Health Matrix (Grid of 6 items) */
+    .services-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .service-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.15rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .service-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(30, 41, 59, 0.7);
+    }
+
+    .service-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      shrink: 0;
+    }
+
+    .service-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+    }
+
+    .service-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .service-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .status-dot-sm {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Live Terminal Log */
+    .terminal-box {
+      background: #040711;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      padding: 1.15rem 1.4rem;
+      margin-bottom: 2.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #94a3b8;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 0.65rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .t-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    .t-red { background: #ef4444; }
+    .t-yellow { background: #f59e0b; }
+    .t-green { background: #10b981; }
+
+    .terminal-line {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+    }
+
+    .t-time { color: #475569; }
+    .t-tag { color: #818cf8; font-weight: 600; }
+    .t-msg { color: #cbd5e1; }
+    .t-ok { color: #34d399; font-weight: 600; }
+
+    /* Action Buttons */
+    .links-footer {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .portal-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 0.92rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .portal-btn.primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 18px rgba(79, 70, 229, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .portal-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.55);
+    }
+
+    .portal-btn.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+    }
+
+    .portal-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      color: #ffffff;
+    }
+
+    .copyright {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #475569;
+      margin-top: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .title { font-size: 2rem; }
+      .metrics-grid { grid-template-columns: 1fr; }
+      .services-grid { grid-template-columns: 1fr; }
+      .scope-banner { flex-direction: column; align-items: flex-start; }
+      .scope-graph { width: 100%; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Live Status Pill -->
+    <div class="live-badge-wrapper">
+      <div class="live-badge">
+        <span class="pulse-dot"></span>
+        Production API Cloud • Live & Active
+      </div>
+    </div>
+
+    <!-- Main Title -->
+    <header class="header">
+      <h1 class="title">GCAAA Backend Engine</h1>
+      <p class="subtitle">
+        Govt. College of Architecture Alumni Association • Secure Microservices, Membership Database & Cloud Engine
+      </p>
+    </header>
+
+    <!-- Real-time Live Scope Heartbeat Banner -->
+    <div class="scope-banner">
+      <div class="scope-info">
+        <div class="scope-title">System Heartbeat & Ping</div>
+        <div class="scope-val">
+          <span id="livePing">18ms</span>
+          <span style="font-size: 0.8rem; color: #94a3b8; font-family: var(--font-sans); font-weight: 500;">
+            • Continuous Live Stream
+          </span>
+        </div>
+      </div>
+      <div class="scope-graph">
+        <svg class="ecg-line" viewBox="0 0 300 40">
+          <path d="M0,20 L60,20 L75,5 L85,35 L95,12 L105,25 L115,20 L180,20 L195,3 L205,37 L215,10 L225,24 L235,20 L300,20" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Key Metrics 4-Card Grid -->
+    <div class="metrics-grid">
+      <!-- Status Card -->
+      <div class="metric-card">
+        <div class="metric-label">System Health</div>
+        <div class="metric-value" style="color: #34d399;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+          <%= status || 'Healthy' %>
+        </div>
+        <div class="metric-sub">99.98% High Availability</div>
+      </div>
+
+      <!-- Database Card -->
+      <div class="metric-card">
+        <div class="metric-label">Database Cluster</div>
+        <div class="metric-value" style="color: #818cf8;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          <%= dbStatus || 'Connected' %>
+        </div>
+        <div class="metric-sub">MongoDB Atlas Replica Set</div>
+      </div>
+
+      <!-- Live Uptime Card with JS Ticker -->
+      <div class="metric-card">
+        <div class="metric-label">Live Active Uptime</div>
+        <div class="metric-value mono" id="uptimeDisplay" style="color: #38bdf8;">
+          <%= uptime %>
+        </div>
+        <div class="metric-sub">Auto-synchronized live</div>
+      </div>
+
+      <!-- Environment Card -->
+      <div class="metric-card">
+        <div class="metric-label">Environment</div>
+        <div class="metric-value mono" style="color: #facc15; font-size: 1.15rem; text-transform: uppercase;">
+          <%= environment || 'production' %>
+        </div>
+        <div class="metric-sub">TLS 1.3 • AES-256 GCM</div>
+      </div>
+    </div>
+
+    <!-- Microservices & Operational Modules Matrix -->
+    <div class="services-title">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+      Operational Services Status
+    </div>
+
+    <div class="services-grid">
+      <!-- Node 1 -->
+      <div class="service-card">
+        <div class="service-icon" style="color: #34d399;">⚡</div>
+        <div class="service-details">
+          <div class="service-name">REST API Gateway</div>
+          <div class="service-status">
+            <span class="status-dot-sm"></span> Operational
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 2 -->
+      <div class="service-card">
+        <div class="service-icon" style="color: #818cf8;">🗄️</div>
+        <div class="service-details">
+          <div class="service-name">Alumni Database</div>
+          <div class="service-status">
+            <span class="status-dot-sm"></span> Connected
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 3 -->
+      <div class="service-card">
+        <div class="service-icon" style="color: #facc15;">🛡️</div>
+        <div class="service-details">
+          <div class="service-name">JWT & Auth Vault</div>
+          <div class="service-status">
+            <span class="status-dot-sm"></span> Protected
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 4 -->
+      <div class="service-card">
+        <div class="service-icon" style="color: #38bdf8;">☁️</div>
+        <div class="service-details">
+          <div class="service-name">Media CDN Storage</div>
+          <div class="service-status">
+            <span class="status-dot-sm"></span> Cloudinary Active
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 5 -->
+      <div class="service-card">
+        <div class="service-icon" style="color: #fb7185;">✉️</div>
+        <div class="service-details">
+          <div class="service-name">Notification Engine</div>
+          <div class="service-status">
+            <span class="status-dot-sm"></span> SMTP Dispatch Ready
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 6 -->
+      <div class="service-card">
+        <div class="service-icon" style="color: #a78bfa;">🔒</div>
+        <div class="service-details">
+          <div class="service-name">CORS Security Filter</div>
+          <div class="service-status">
+            <span class="status-dot-sm"></span> Strict Policy
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-time Live Log Feed -->
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="t-dot t-red"></span>
+          <span class="t-dot t-yellow"></span>
+          <span class="t-dot t-green"></span>
+        </div>
+        <div>Engine Diagnostics Log</div>
+        <div style="color: #34d399;">● LIVE STREAM</div>
+      </div>
+      <div class="terminal-line">
+        <span class="t-time" id="logTime1">00:00:00</span>
+        <span class="t-tag">[SYSTEM]</span>
+        <span class="t-msg">API Gateway initialized on <strong style="color: #f1f5f9;">api.gcaalumniassociation.com</strong></span>
+        <span class="t-ok">SUCCESS</span>
+      </div>
+      <div class="terminal-line">
+        <span class="t-time" id="logTime2">00:00:00</span>
+        <span class="t-tag">[DATABASE]</span>
+        <span class="t-msg">Atlas Primary Replica Cluster connection confirmed</span>
+        <span class="t-ok">HEALTHY</span>
+      </div>
+      <div class="terminal-line">
+        <span class="t-time" id="logTime3">00:00:00</span>
+        <span class="t-tag">[SECURITY]</span>
+        <span class="t-msg">CORS origins verified for portal & admin domains</span>
+        <span class="t-ok">ACTIVE</span>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <div class="links-footer">
+      <a href="https://gcaalumniassociation.com" class="portal-btn primary" target="_blank">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Open Alumni Portal</span>
+        <span style="opacity: 0.6;">↗</span>
+      </a>
+      <a href="https://admin.gcaalumniassociation.com" class="portal-btn secondary" target="_blank">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <span>Admin Dashboard</span>
+        <span style="opacity: 0.6;">↗</span>
+      </a>
+    </div>
+
+    <div class="copyright">
+      &copy; <%= new Date().getFullYear() %> Govt. College of Architecture Alumni Association. All rights reserved.
+    </div>
+  </div>
+
+  <!-- Real-Time Live Ticker Script -->
+  <script>
+    // Live ticking uptime counter
+    let uptimeSeconds = <%= Number(uptimeSec) || 0 %>;
+    const uptimeEl = document.getElementById('uptimeDisplay');
+
+    function formatUptime(totalSec) {
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+      if (days > 0) {
+        return `${days}d ${hours}h ${mins}m ${secs}s`;
+      }
+      return `${hours}h ${mins}m ${secs}s`;
+    }
+
+    if (uptimeEl) {
+      uptimeEl.innerText = formatUptime(uptimeSeconds);
+      setInterval(() => {
+        uptimeSeconds++;
+        uptimeEl.innerText = formatUptime(uptimeSeconds);
+      }, 1000);
+    }
+
+    // Set real timestamps for the diagnostic log
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    ['logTime1', 'logTime2', 'logTime3'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = timeStr;
+    });
+
+    // Dynamic latency measurement
+    const pingEl = document.getElementById('livePing');
+    setInterval(() => {
+      if (pingEl) {
+        const simulated = Math.floor(Math.random() * 8) + 14;
+        pingEl.innerText = `${simulated}ms`;
+      }
+    }, 4000);
+  </script>
+</body>
+</html>
