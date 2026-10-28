@@ -127,6 +127,14 @@ const registeredMemberSchema = new mongoose.Schema(
       default: 'Pending',
       index: true,
     },
+    source: {
+      type: String,
+      enum: ['website', 'admin panel', 'excel'],
+      default: 'website',
+      trim: true,
+      lowercase: true,
+      index: true,
+    },
     isDeleted: {
       type: Boolean,
       default: false,

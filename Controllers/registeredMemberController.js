@@ -30,6 +30,7 @@ const buildRegisteredMemberFilter = async ({
   year,
   status,
   view,
+  source,
 }) => {
   const filter = {};
 
@@ -116,6 +117,11 @@ const buildRegisteredMemberFilter = async ({
     } else {
       filter.status = status;
     }
+  }
+
+  // 🏷️ Source filter (website, admin panel, excel)
+  if (source) {
+    filter.source = String(source).trim().toLowerCase();
   }
 
   return filter;
@@ -390,6 +396,7 @@ export const createMember = async (req, res) => {
       email: email ? email.trim().toLowerCase() : '',
       mobile: mobile ? String(mobile).trim() : '',
       status: status || 'Active',
+      source: req.body.source || 'admin panel',
     });
 
     return res.status(201).json({
@@ -530,6 +537,7 @@ export const bulkSeedMembers = async (req, res) => {
               email: m.email || '',
               mobile: m.mobile || '',
               status: m.status || 'Active',
+              source: m.source || 'excel',
             },
           },
           upsert: true,
@@ -787,6 +795,7 @@ export const registerAlumni = async (req, res) => {
       photo: uploadedPhotoUrl || '',
       applicantSignature: applicantSignature || fullName,
       status: 'Pending',
+      source: 'website',
     });
 
     // Send receipt email to the registered alumnus
