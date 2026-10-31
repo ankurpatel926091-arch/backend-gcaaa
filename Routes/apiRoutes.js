@@ -7,6 +7,7 @@ import blogRoutes from './blogRoutes.js';
 import contactPageRoutes from './contactPageRoutes.js';
 import batchRoute from './batch.routes.js';
 import galleryRoutes from './galleryRoutes.js';
+import publicationRoutes from './publicationRoutes.js';
 import withdrawalRouter from './withdrawal.routes.js';
 
 const apiRoutes = express.Router();
@@ -20,6 +21,7 @@ apiRoutes.use('/blogs', blogRoutes);
 apiRoutes.use('/contact-page', contactPageRoutes);
 apiRoutes.use('/batches', batchRoute);
 apiRoutes.use('/gallery', galleryRoutes);
+apiRoutes.use('/publications', publicationRoutes);
 apiRoutes.use('/withdrawals', withdrawalRouter);
 
 // Health check endpoint under /api/health
@@ -32,5 +34,4 @@ apiRoutes.get('/health', (req, res) => {
   });
 });
 
-// export { apiRoutes };
 export default apiRoutes;

@@ -39,5 +39,38 @@ export const uploadToCloudinary = async (fileStr, folder = 'gcaaa/alumni') => {
   }
 };
 
+/**
+ * Upload a PDF file (Base64 data or buffer/file path) to Cloudinary
+ */
+export const uploadPdfToCloudinary = async (fileStr, folder = 'gcaaa/publications/pdfs') => {
+  if (!fileStr || typeof fileStr !== 'string' || !fileStr.trim()) {
+    return null;
+  }
+
+  if (fileStr.startsWith('http://') || fileStr.startsWith('https://')) {
+    return fileStr;
+  }
+
+  try {
+    const result = await cloudinary.uploader.upload(fileStr, {
+      folder,
+      resource_type: 'auto',
+    });
+    return result.secure_url;
+  } catch (error) {
+    console.warn(`Cloudinary auto PDF upload failed for ${folder}, retrying raw:`, error.message);
+    try {
+      const rawResult = await cloudinary.uploader.upload(fileStr, {
+        folder,
+        resource_type: 'raw',
+      });
+      return rawResult.secure_url;
+    } catch (rawErr) {
+      console.error(`Cloudinary raw PDF upload failed for ${folder}:`, rawErr.message);
+      return null;
+    }
+  }
+};
+
 export { cloudinary };
-export default { cloudinary, uploadToCloudinary };
+export default { cloudinary, uploadToCloudinary, uploadPdfToCloudinary };

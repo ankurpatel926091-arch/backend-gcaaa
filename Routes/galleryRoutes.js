@@ -6,14 +6,17 @@ import {
   getPublishedGalleryPhotos,
   updateGalleryPhoto,
 } from '../Controllers/galleryController.js';
-import { protectAdmin } from '../Middlewares/authMiddleware.js';
 
 const router = express.Router();
 
+// Public routes (for Website frontend)
 router.get('/', getPublishedGalleryPhotos);
-router.get('/admin', protectAdmin, getAdminGalleryPhotos);
-router.post('/', protectAdmin, createGalleryPhoto);
-router.put('/:id', protectAdmin, updateGalleryPhoto);
-router.delete('/:id', protectAdmin, deleteGalleryPhoto);
+
+// Admin routes (for Admin Panel)
+router.get('/admin', getAdminGalleryPhotos);
+router.get('/admin/all', getAdminGalleryPhotos);
+router.post('/', createGalleryPhoto);
+router.put('/:id', updateGalleryPhoto);
+router.delete('/:id', deleteGalleryPhoto);
 
 export default router;

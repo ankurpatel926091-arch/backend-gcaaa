@@ -18,29 +18,29 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       required: [true, 'Gallery photo image URL is required.'],
       trim: true,
-      validate: {
-        validator(value) {
-          try {
-            return ['http:', 'https:'].includes(new URL(value).protocol);
-          } catch {
-            return false;
-          }
-        },
-        message: 'Gallery photo image URL must be a valid HTTP or HTTPS URL.',
-      },
     },
     category: {
       type: String,
       required: [true, 'Gallery photo category is required.'],
       trim: true,
       lowercase: true,
-      match: [/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Category must be a lowercase slug.'],
+      default: 'general',
     },
     categoryLabel: {
       type: String,
       trim: true,
       default: '',
       maxlength: 80,
+    },
+    album: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    date: {
+      type: String,
+      trim: true,
+      default: '',
     },
     badge: {
       type: String,
