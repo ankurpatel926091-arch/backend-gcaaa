@@ -75,10 +75,11 @@ const publicationSchema = new mongoose.Schema(
       default: '',
     },
     year: {
-      type: String,
-      trim: true,
-      default: '',
-    },
+  type: Number,
+  required: true, 
+  default: null, 
+},
+
     publisher: {
       type: String,
       trim: true,

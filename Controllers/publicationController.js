@@ -35,58 +35,74 @@ const formatPublication = (pub) => {
 export const getPublishedPublications = async (req, res) => {
   try {
     const { year, edition, id } = req.query;
+    const baseFilter = { isPublished: { $ne: false } };
 
-    // Fetch all published records to compute metrics and dynamic filter tabs
-    const allPublished = await PublicationModel.find({ isPublished: { $ne: false } })
-      .sort({ sortOrder: 1, year: -1, createdAt: -1 })
-      .lean();
-
-    const formattedAll = allPublished.map(formatPublication);
-
-    // Compute dynamic summary metrics
-    const totalPages = formattedAll.reduce((sum, p) => sum + (Number(p.pages) || 0), 0);
-    const years = formattedAll.map((p) => parseInt(p.year, 10)).filter((y) => !isNaN(y)).sort((a, b) => a - b);
-    const yearSpan = years.length > 0 ? `${years[0]} – ${years[years.length - 1]}` : '2013 – 2025';
-
-    // Dynamic tabs for frontend filter
-    const filterTabs = [
-      { key: 'all', label: 'All Editions', count: formattedAll.length },
-      ...formattedAll.map((p) => ({
-        key: p.year || p.id,
-        year: p.year,
-        id: p.id,
-        label: p.edition || `${p.year} Edition`,
-        sectionNumber: p.sectionNumber || '01',
-      })),
-    ];
-
-    // Backend MongoDB query filtering
-    const query = { isPublished: { $ne: false } };
-    if (id && id !== 'all' && mongoose.isValidObjectId(id)) {
-      query._id = id;
-    } else if (year && year !== 'all') {
-      query.year = year;
-    } else if (edition && edition !== 'all') {
-      query.$or = [
-        { edition: new RegExp(edition, 'i') },
-        { year: edition },
-      ];
+    if (year) {
+      baseFilter.year = year;
     }
 
-    const publications = await PublicationModel.find(query)
-      .sort({ sortOrder: 1, year: -1, createdAt: -1 })
+    const withoutFilters = await PublicationModel.find({ isPublished: { $ne: false } })
+      .sort({year: -1, createdAt: -1 })
+      .lean(); 
+
+    // Fetch all published records to compute metrics and dynamic filter tabs
+    const allPublished = await PublicationModel.find(baseFilter)
+      .sort({year: -1, createdAt: -1 })
       .lean();
 
-    const formatted = publications.map(formatPublication);
+    const maxYear = withoutFilters[0].year;
+    const minYear = withoutFilters[withoutFilters.length - 1].year;
+
+    const yearSpan = minYear && maxYear ? `${minYear} – ${maxYear}` : '';
+
+    console.log('Fetched all published publications:', allPublished);
+
+    // const formattedAll = allPublished.map(formatPublication);
+
+    // Compute dynamic summary metrics
+    // const totalPages = formattedAll.reduce((sum, p) => sum + (Number(p.pages) || 0), 0);
+    // const years = formattedAll.map((p) => parseInt(p.year, 10)).filter((y) => !isNaN(y)).sort((a, b) => a - b);
+    // const yearSpan = years.length > 0 ? `${years[0]} – ${years[years.length - 1]}` : '2013 – 2025';
+
+    // Dynamic tabs for frontend filter
+    // const filterTabs = [
+    //   { key: 'all', label: 'All Editions', count: formattedAll.length },
+    //   ...formattedAll.map((p) => ({
+    //     key: p.year || p.id,
+    //     year: p.year,
+    //     id: p.id,
+    //     label: p.edition || `${p.year} Edition`,
+    //     sectionNumber: p.sectionNumber || '01',
+    //   })),
+    // ];
+
+    // Backend MongoDB query filtering
+    // const query = { isPublished: { $ne: false } };
+    // if (id && id !== 'all' && mongoose.isValidObjectId(id)) {
+    //   query._id = id;
+    // } else if (year && year !== 'all') {
+    //   query.year = year;
+    // } else if (edition && edition !== 'all') {
+    //   query.$or = [
+    //     { edition: new RegExp(edition, 'i') },
+    //     { year: edition },
+    //   ];
+    // }
+
+    // const publications = await PublicationModel.find(query)
+    //   .sort({ sortOrder: 1, year: -1, createdAt: -1 })
+    //   .lean();
+
+    // const formatted = publications.map(formatPublication);
 
     return res.status(200).json({
       success: true,
-      count: formatted.length,
-      data: formatted,
-      filterTabs,
+      count: allPublished.length,
+      data: allPublished,
+      // filterTabs,
       metrics: {
-        totalPublications: formattedAll.length,
-        totalPages,
+        // totalPublications: formattedAll.length,
+        // totalPages,
         yearSpan,
       },
     });
